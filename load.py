@@ -7,6 +7,9 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 from sklearn.model_selection import train_test_split
 import random
 import torch
+import numpy as np
+from torch.utils.data.sampler import SubsetRandomSampler
+
 
  
 ### Globals ###
@@ -15,9 +18,6 @@ annotation_file = os.path.join(videos_root, 'annotations.txt')
 
 # label # to label word
 labels_dict = {0: "posed", 1: "genuine"}
-
-
-
 
 
 def plot_video(rows, cols, frame_list, plot_width, plot_height, title: str):
@@ -55,17 +55,39 @@ if __name__ == "__main__":
         test_mode=False
     )
 
+    batch_size = 3
+    num_workers = 2
+    pin_memory = True # not sure if this is necessary
+
+    validation_split = .2
+
+    # https://stackoverflow.com/questions/50544730/how-do-i-split-a-custom-dataset-into-training-and-test-datasets
+    # Creating data indices for training and validation splits:
+    dataset_size = len(dataset)
+    indices = list(range(dataset_size))
+    split = int(np.floor(validation_split * dataset_size))
+
+
+    # shuffle dataset
+    np.random.seed(42)
+    np.random.shuffle(indices)
+    train_indices, val_indices = indices[split:], indices[:split]
+
+    # Creating PT data samplers and loaders:
+    train_sampler = SubsetRandomSampler(train_indices)
+    valid_sampler = SubsetRandomSampler(val_indices)
+
     # https://pytorch.org/docs/stable/data.html
     # convert to more workable from
-    dataloader = torch.utils.data.DataLoader(
-        dataset=dataset,
-        batch_size=3,
-        shuffle=True,
-        num_workers=2,
-        pin_memory=True
-    )
+    train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, 
+                                            sampler=train_sampler, num_workers=num_workers, pin_memory=pin_memory)
+    
+    validation_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
+                                                    sampler=valid_sampler, num_workers=num_workers, pin_memory=pin_memory)
 
-    print(dataloader)
+        
+
+
 
     # NOTE: each VideoFrameDataset object is a list of samples where each sample is
     # a list of frames (tensor) from a video clip --> sample[0]
@@ -80,17 +102,15 @@ if __name__ == "__main__":
     # training_data = dataset[:testing_start]
     # testing_data = dataset[testing_start:]
 
-
-   
-
-    
-
     frames = sample[0]  # list of PIL images
     label = sample[1]   # integer label,   # NOTE: posed=0, genuine=1s
 
-    print("\nMulti-Label Example")
+    print("num batches = ", len(train_loader))
+    exit(0)
+    
+    print(" Train Model on training data...")
     for epoch in range(10):
-        for batch in dataloader:
+        for batch in train_loader:
 
             print("batch = ", len(batch))
             

@@ -63,10 +63,17 @@ if __name__ == "__main__":
             # NOTE: posed=0, genuine=1
 
 
-            for frame_name in os.listdir(frames_dir):       
+            sorted_frames = (os.listdir(frames_dir))
+            sorted_frames.sort()
 
-                frame_name_parts = frame_name.split("_")
-                new_frame_name = "img_" + (frame_name_parts[3]) 
+            
+            for indx in range(len(sorted_frames)):       
+
+                frame_name = sorted_frames[indx]
+                
+                # rename all frames based on index (so frames are number [1, 2, ..., NUM_FRAMES] without gaps)
+                new_frame_name = "img_" +f"{(indx +1):06d}" + ".bmp"
+
                 # simplify naming
                 os.rename(frames_dir + frame_name  , frames_dir + new_frame_name)
 
