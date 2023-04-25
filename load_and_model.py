@@ -22,6 +22,7 @@ annotation_file = os.path.join(videos_root, 'annotations.txt')
 
 # label # to label word
 labels_dict = {0: "posed", 1: "genuine"}
+num_classes = 2
 
 
 # Returns train_loader, validation_loader
@@ -122,7 +123,7 @@ if __name__ == "__main__":
             self.conv2 = nn.Conv2d(6, 16, 5)
             self.fc1 = nn.Linear(112896, 120)
             self.fc2 = nn.Linear(120, 84)
-            self.fc3 = nn.Linear(84, 10)
+            self.fc3 = nn.Linear(84, num_classes)
 
         def forward(self, x):
             if x.dim() == 5:
