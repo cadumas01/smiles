@@ -203,9 +203,7 @@ class CNN_LSTM5(nn.Module):
         # x has combined frame and batch dimensions so that new shape is:
         # x.shape = ()
         x = i.view(-1, i.shape[2], i.shape[3], i.shape[4]) # original code with reshaping
-        print("x after viewing and before covn1 ", x.shape)
         x = F.relu(self.conv1(x))
-        print("x shape after 1 conv", x.shape)
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
         x = nn.AvgPool2d(4)(x)
@@ -214,11 +212,9 @@ class CNN_LSTM5(nn.Module):
         # Now, x.shape = (num_batches, num_frames, channels * width * height)
         x = x.view(i.shape[0], i.shape[1], -1)
 
-        print("about to go into lstm, x shape", x.shape)
 
         
         x, _ = self.lstm(x)
-        print("after lstm x shape = ", x.shape)
 
         # x shape is (num_batches, lsmt output) 
         # It's okay to pass batched data to fully connected Linear layers
@@ -226,3 +222,6 @@ class CNN_LSTM5(nn.Module):
         x = self.fc1(x)
         x = self.fc2(x)
         return x    
+    
+
+    # Look at Slow fast model

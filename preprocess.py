@@ -15,7 +15,6 @@ annotations_path = dst_parent + "annotations.txt"
 
 # remove old files and dirs before creating new ones
 def clean():
-
     if os.path.isfile(annotations_path):
         os.system(f"rm {annotations_path}")
     

@@ -26,10 +26,18 @@ num_training_epochs = 2
 # runs everything
 if __name__ == "__main__":
     
+  
     if len(sys.argv) > 2:
         print("usage: python3 main.py [retrain]")
         print("add the argument 'retrain' to retrain the model, otherwise saved previous neural network will be loaded")
         exit()
+
+
+    if torch.cuda.is_available(): 
+        dev = "cuda:0" 
+    else: 
+        dev = "cpu" 
+        device = torch.device(dev) 
 
     #### Get dataset from images ###
     
