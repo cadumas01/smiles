@@ -20,11 +20,13 @@ def train(model, train_loader, num_epochs):
 
             inputs, labels = batch_data
 
+            print("inputs shape", inputs.shape)
             # zero the parameter gradients
             optimizer.zero_grad()
 
             # forward + backward + optimize
             outputs = model(inputs)
+            print("outputs shape", outputs.shape)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()

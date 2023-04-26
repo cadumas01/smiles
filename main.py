@@ -19,8 +19,9 @@ num_classes = 2
 
 batch_size = 3
 validation_split = .2
-
+num_frames = 10
 num_training_epochs = 2
+
 
 # runs everything
 if __name__ == "__main__":
@@ -43,7 +44,7 @@ if __name__ == "__main__":
     dataset = VideoFrameDataset(
         root_path=videos_root,
         annotationfile_path=annotation_file,
-        num_segments=15, # was set to 5 before (i.e. 5 frames per video taken) but presents problems because a 5D tensor is created (cant do Conv2D natively)
+        num_segments= num_frames, # was set to 5 before (i.e. 5 frames per video taken) but presents problems because a 5D tensor is created (cant do Conv2D natively)
         frames_per_segment=1,
         imagefile_template='img_{:06d}.jpg',
         transform=preprocess,
@@ -56,7 +57,7 @@ if __name__ == "__main__":
 
     # Define model
     print("Defining model...")
-    model = CNN_LSTM()
+    model = CNN_LSTM5(num_frames=num_frames)
 
     # train model (if applicable)
     if 'retrain' in sys.argv:
