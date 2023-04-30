@@ -1,2 +1,3 @@
 PEDFE_trim.zip filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
+PEDFE_trim/** filter=lfs diff=lfs merge=lfs -text
