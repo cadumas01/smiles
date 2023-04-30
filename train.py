@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.optim as optim
 import torch
+import numpy as np
 
 
 
@@ -13,8 +14,7 @@ def train(model, train_loader, num_epochs):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.99)
 
-
-    ### TRAIN ####
+    losses = np.array([])
 
     print("Train Model on training data...")
     for epoch in range(num_epochs):
@@ -41,6 +41,8 @@ def train(model, train_loader, num_epochs):
             loss.backward()
             optimizer.step()
 
+            losses.append(loss)
+
             # print statistics
             running_loss += loss.item()
             if i % 20 == 19:    # print every 20 mini-batches
@@ -48,4 +50,4 @@ def train(model, train_loader, num_epochs):
                 running_loss = 0.0
 
     print('Finished Training')
-    return model
+    return losses

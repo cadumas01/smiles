@@ -9,6 +9,8 @@ from train import train
 from test import test
 from models import *
 
+import matplotlib.pyplot as plt
+
 ### Globals ###
 videos_root = os.path.join(os.getcwd(), 'PEDFE_trim')
 annotation_file = os.path.join(videos_root, 'annotations.txt')
@@ -70,7 +72,11 @@ if __name__ == "__main__":
     # train model (if applicable)
     if 'retrain' in sys.argv:
         print("Training model...")
-        model = train(model, train_loader, num_training_epochs)
+        training_losses = train(model, train_loader, num_training_epochs)    
+        plt.plot(training_losses)
+        plt.title("Training Loss over Epoch + Batches")
+        plt.ylabel("Loss")
+        plt.savefig("TrainingLoss.png")
 
     # save trained model
     PATH = './basic_model.pth'
