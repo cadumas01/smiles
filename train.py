@@ -6,9 +6,12 @@ import torch
 
 # Defines loss function and trains model (returns trained model -- maybe train in place)
 def train(model, train_loader, num_epochs):
+
+    model.train()
+
     # loss function
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.99)
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.99)
 
 
     ### TRAIN ####
@@ -25,6 +28,15 @@ def train(model, train_loader, num_epochs):
 
             # forward + backward + optimize
             outputs = model(inputs)
+
+            _ , predicted = torch.max(outputs.data, 1)
+
+            correct = (predicted == labels).sum().item()
+            print(f"accuracy = {correct / predicted.shape[0]}")
+
+            print("outputs: ", outputs )
+            print("predicted: ", predicted)
+            print("actual labels: ", labels)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
