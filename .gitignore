@@ -1,6 +1,3 @@
-
 # Don't track full dataset (too big) at least for now
 PEDFE_images/
-PEDFE_trim/
-*.zip
 *.pth

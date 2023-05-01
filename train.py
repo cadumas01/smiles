@@ -41,7 +41,7 @@ def train(model, train_loader, num_epochs):
             loss.backward()
             optimizer.step()
 
-            losses.append(loss)
+            np.append(losses, loss)
 
             # print statistics
             running_loss += loss.item()
