@@ -5,7 +5,7 @@ import PIL
 import sys
 
 from load import get_loaders
-from train import train
+from train import *
 from test import test
 from models import *
 
@@ -23,7 +23,7 @@ num_classes = 2
 batch_size = 5
 validation_split = .2
 num_frames = 10
-num_training_epochs = 10
+num_training_epochs = 15
 
 
 # runs everything
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     # train model (if applicable)
     if 'retrain' in sys.argv:
         print("Training model...")
-        training_losses = train(model, train_loader, num_training_epochs)    
+        training_losses = train2(model, train_loader, num_training_epochs)    
 
         iterations = np.arange(training_losses.size)
 
