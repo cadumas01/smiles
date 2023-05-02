@@ -10,8 +10,8 @@ from torchvision.models import resnet18, resnet101, alexnet
 
 # Defintion for different models
 
-# basic CNN - CNN on each frame then do voting to determine outcome
-class VOTING(nn.Module):
+# basic CNN - CNN on middle frame 
+class BasicCNN(nn.Module):
     def __init__(self, num_frames=10, num_classes=2):
         super().__init__()
         self.num_classes = num_classes
@@ -26,9 +26,7 @@ class VOTING(nn.Module):
         if x.dim() == 5:
             NUM_BATCHES, NUM_FRAMES, C, H, W = x.shape
 
-        x_frames = torch.zeros(NUM_BATCHES, self.num_classes)
-        for frame_index in range(NUM_FRAMES):
-            x_frame = x[:, frame_index, :, :, :].reshape(NUM_BATCHES, C, H, W)
+            x_frame = x[: , NUM_FRAMES // 2, : , : , :]
 
             x_frame = self.pool(F.relu(self.conv1(x_frame)))
             x_frame = self.pool(F.relu(self.conv2(x_frame)))
@@ -37,15 +35,7 @@ class VOTING(nn.Module):
             x_frame = F.relu(self.fc2(x_frame))
             x_frame = self.fc3(x_frame)
 
-            print("x_frame = ", x_frame)
-            _, predicted = torch.max(x_frame, 1)
-            print("predicted" ,type(predicted))
-
-            for batch_index in range(NUM_BATCHES):
-                x_frames[batch_index][predicted[batch_index]] += 1
-
-        print("x frames ", x_frames)
-        return x_frames
+        return x_frame
     
 # Used below
 class Identity(nn.Module):
@@ -54,6 +44,64 @@ class Identity(nn.Module):
         
     def forward(self, x):
         return x
+    
+
+# basic CNN - CNN on middle frame but with resnet
+class BasicCNN2(nn.Module):
+    def __init__(self, num_frames=10, num_classes=2):
+        super().__init__()
+        self.num_classes = num_classes
+        self.resnet = resnet18(pretrained=True)
+
+        self.resnet.fc = Identity() # replace final linear layer with identity
+
+        self.fc1 = nn.Linear(512, 128)
+        self.fc2 = nn.Linear(128, num_classes)
+
+
+    def forward(self, x):
+        if x.dim() == 5:
+            NUM_BATCHES, NUM_FRAMES, C, H, W = x.shape
+
+            x_frame = x[: , NUM_FRAMES // 2, : , : , :]
+
+            x_frame = self.resnet(x_frame)
+
+            x_frame = torch.flatten(x_frame, 1) # flatten all dimensions except batch
+
+            x_frame = F.relu(self.fc1(x_frame))
+            x_frame = self.fc2(x_frame)
+
+        return x_frame
+
+# basic CNN - CNN on middle frame but with resnet
+class BasicCNN3(nn.Module):
+    def __init__(self, num_frames=10, num_classes=2):
+        super().__init__()
+        self.num_classes = num_classes
+        self.resnet = resnet101(pretrained=True)
+
+        self.resnet.fc = Identity() # replace final linear layer with identity
+
+        self.fc1 = nn.Linear(2048, 128)
+        self.fc2 = nn.Linear(128, num_classes)
+
+
+    def forward(self, x):
+        if x.dim() == 5:
+            NUM_BATCHES, NUM_FRAMES, C, H, W = x.shape
+
+            x_frame = x[: , NUM_FRAMES // 2, : , : , :]
+
+            x_frame = self.resnet(x_frame)
+
+            x_frame = torch.flatten(x_frame, 1) # flatten all dimensions except batch
+
+            x_frame = F.relu(self.fc1(x_frame))
+            x_frame = self.fc2(x_frame)
+
+        return x_frame
+
 
 # Based on https://github.com/pranoyr/cnn-lstm/blob/master/models/cnnlstm.py
 # LSTM + CNN

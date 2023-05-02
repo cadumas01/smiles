@@ -34,9 +34,9 @@ def train(model, train_loader, num_epochs):
             correct = (predicted == labels).sum().item()
             #print(f"accuracy = {correct / predicted.shape[0]}")
 
-            print("outputs: ", outputs )
-            print("predicted: ", predicted)
-            print("actual labels: ", labels)
+            #print("outputs: ", outputs )
+            #print("predicted: ", predicted)
+            #print("actual labels: ", labels)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -49,6 +49,6 @@ def train(model, train_loader, num_epochs):
                 print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 20:.3f}')
                 running_loss = 0.0
 
-            print("losses = ", losses)
+            #print("losses = ", losses)
     print('Finished Training')
     return losses

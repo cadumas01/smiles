@@ -20,10 +20,10 @@ annotation_file = os.path.join(videos_root, 'annotations.txt')
 labels_dict = {0: "posed", 1: "genuine"}
 num_classes = 2
 
-batch_size = 3
+batch_size = 5
 validation_split = .2
 num_frames = 10
-num_training_epochs = 2
+num_training_epochs = 10
 
 
 # runs everything
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     preprocess = transforms.Compose([
         ImglistToTensor(),  # list of PIL images to (FRAMES x CHANNELS x HEIGHT x WIDTH) tensor
       
-        # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), --> Maybe include this
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
     # break video clip down into five different segments (each is a list of frames), take 1 frame from each segment
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     
     # Define model
     print("Defining model...")
-    model = VOTING(num_frames=num_frames)
+    model = BasicCNN3(num_frames=num_frames)
 
     # train model (if applicable)
     if 'retrain' in sys.argv:
@@ -88,6 +88,7 @@ if __name__ == "__main__":
         plt.plot(training_losses)
         plt.title("Training Loss over Epoch + Batches")
         plt.ylabel("Loss")
+        plt.xlabel("Iterations")
         plt.savefig("TrainingLoss.png")
 
     # save trained model
