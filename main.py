@@ -71,7 +71,7 @@ if __name__ == "__main__":
     preprocess = transforms.Compose([
         ImglistToTensor(),  # list of PIL images to (FRAMES x CHANNELS x HEIGHT x WIDTH) tensor
       
-        # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), --> Maybe include this
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # --> Maybe include this
     ])
 
     # break video clip down into five different segments (each is a list of frames), take 1 frame from each segment
