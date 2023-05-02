@@ -80,6 +80,11 @@ if __name__ == "__main__":
         sorted_frames = (os.listdir(frames_dir))
         sorted_frames.sort()
 
+        # get rid of any video with less than 10 frames
+        if len(sorted_frames) < 10:
+            print("removing directory of size ", len(sorted_frames))
+            os.system("rm -r " + frames_dir)
+            continue
         
         for indx in range(len(sorted_frames)):       
 

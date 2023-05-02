@@ -13,7 +13,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 ### Globals ###
-videos_root = os.path.join(os.getcwd(), 'PEDFE_trim')
+
+# this videos root is differnet here (fulldata branch)
+videos_root = os.path.join(os.getcwd(), 'PEDFE_trim_full')
 annotation_file = os.path.join(videos_root, 'annotations.txt')
 
 # label # to label word
@@ -94,7 +96,7 @@ if __name__ == "__main__":
     
     # Define model
     print("Defining model...")
-    model = CNN_LSTM5(num_frames=num_frames)
+    model = CNN_LSTM(num_frames=num_frames, num_classes=num_classes)
 
     # train model (if applicable)
     if 'retrain' in sys.argv:

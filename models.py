@@ -91,23 +91,6 @@ class CNN_LSTM(nn.Module):
         return x    
 
 
-
-        print("x_3d shape ", x_3d.shape)
-        hidden = None
-        for t in range(x_3d.size(1)):
-            with torch.no_grad():
-                x = self.resnet(x_3d[:, t, :, :, :])  
-            print("x = self.resnet has shape =", x.shape )
-
-            out, hidden = self.lstm(x.unsqueeze(0), hidden)      
-            print("out shape ", out.shape)
-
-        x = self.fc1(out[-1, :, :])
-        x = F.relu(x)
-        x = self.fc2(x)
-        return x 
-
-
 class CNN_LSTM2(nn.Module):
     def __init__(self,hidden_size=3,n_layers=2,N_classes=2):
         super(CNN_LSTM2, self).__init__()
@@ -184,8 +167,6 @@ class CNN_LSTM3(nn.Module):
         x = self.fc(x)
         return x    
     
-
-
 
 
 # Modifed from CNN_LSTM1
