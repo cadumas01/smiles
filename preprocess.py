@@ -10,7 +10,7 @@ from PIL import Image
 dir_path = "PEDFE_images"
 unzip_dir_path = dir_path + "_unzipped"
 
-dst_parent = "PEDFE_trim/"
+dst_parent = "PEDFE_trim_full/"
 annotations_path = dst_parent + "annotations.txt"
 
 # remove old files and dirs before creating new ones
@@ -21,6 +21,24 @@ def clean():
     if os.path.exists(dst_parent):
         os.system(f"rm -r {dst_parent}")
 
+# matches num label to str label
+labels = {
+    0: "fs",
+    1: "fg",
+    2: "ds",
+    3: "dg",
+    4: "ps",
+    5: "pg",
+    6: "ss",
+    7: "sg",
+    8: "ts",
+    9: "tg",
+    10: "rs",
+    11: "rg"
+    }
+
+# reverses above dict
+inverse_labels = {v: k for k, v in labels.items()}
 
 if __name__ == "__main__":
     clean()
@@ -36,60 +54,57 @@ if __name__ == "__main__":
         # f is happiness
         entry_parts = entry.split("_")
 
-        # only work with happiness data
-        if "f" in entry_parts[1]:
+        # THIS VERSION IS FOR PREPROCESSING FULL DATASET . SEE Commits before May 1 on main branch for original preprocessing (happiness only)
+         
+        # two part path {posed OR genuine}/{PARTICPANT_VIDEO}/{FRAMES}
+        frames_dir = dst_parent
+
+        # 0 for posed, 1 for genuine
+        str_label = entry_parts[1]
+
+        frames_dir += str_label + "/"
+
+        label = inverse_labels[str_label]
+
+        frames_dir += f"{entry_parts[0]}_{entry_parts[2]}" + "/"
+
+        # unzip each video into series of frames into a folder named after entry name
+        with zipfile.ZipFile(f"{dir_path}/{entry}", "r") as zip_ref:
+            zip_ref.extractall(frames_dir)
+
+        # for each clip, write a line in notations satisying:
+        # [PATH NAME] [Start frame #] [End frame #] [CLASS INDEX]
+        # NOTE: posed=0, genuine=1
+
+
+        sorted_frames = (os.listdir(frames_dir))
+        sorted_frames.sort()
+
+        
+        for indx in range(len(sorted_frames)):       
+
+            frame_name = sorted_frames[indx]
             
-            # two part path {posed OR genuine}/{PARTICPANT_VIDEO}/{FRAMES}
-            frames_dir = dst_parent
+            # rename all frames based on index (so frames are number [1, 2, ..., NUM_FRAMES] without gaps)
+            new_frame_name = "img_" +f"{(indx +1):06d}" + ".bmp"
 
-            # 0 for posed, 1 for genuine
-            label = 0
+            # simplify naming
+            os.rename(frames_dir + frame_name  , frames_dir + new_frame_name)
 
-            if "s" in entry_parts[1]:
-                frames_dir +="posed/"
-            else:
-                frames_dir += "genuine/"
-                label = 1
-            
-            frames_dir += f"{entry_parts[0]}_{entry_parts[2]}" + "/"
+            # convert each frame from .bmp to .jpg? YES
+            img = Image.open(frames_dir + new_frame_name)
+            rgb_img = img.convert("RGB")
+            jpg_frame_path = (frames_dir + new_frame_name).replace(".bmp", ".jpg")
+            rgb_img.save(jpg_frame_path)
 
-            # unzip each video into series of frames into a folder named after entry name
-            with zipfile.ZipFile(f"{dir_path}/{entry}", "r") as zip_ref:
-                zip_ref.extractall(frames_dir)
-
-            # for each clip, write a line in notations satisying:
-            # [PATH NAME] [Start frame #] [End frame #] [CLASS INDEX]
-            # NOTE: posed=0, genuine=1
+            # remove old image
+            os.remove(frames_dir + new_frame_name)
 
 
-            sorted_frames = (os.listdir(frames_dir))
-            sorted_frames.sort()
+        num_frames = len(os.listdir(frames_dir))
 
-            
-            for indx in range(len(sorted_frames)):       
-
-                frame_name = sorted_frames[indx]
-                
-                # rename all frames based on index (so frames are number [1, 2, ..., NUM_FRAMES] without gaps)
-                new_frame_name = "img_" +f"{(indx +1):06d}" + ".bmp"
-
-                # simplify naming
-                os.rename(frames_dir + frame_name  , frames_dir + new_frame_name)
-
-                # convert each frame from .bmp to .jpg? YES
-                img = Image.open(frames_dir + new_frame_name)
-                rgb_img = img.convert("RGB")
-                jpg_frame_path = (frames_dir + new_frame_name).replace(".bmp", ".jpg")
-                rgb_img.save(jpg_frame_path)
-
-                # remove old image
-                os.remove(frames_dir + new_frame_name)
-
-
-            num_frames = len(os.listdir(frames_dir))
-
-            # add annotation for this clip, start_frame is always 1
-            annotations.write(f"{frames_dir.removeprefix(dst_parent)} 1 {num_frames} {label}\n")
+        # add annotation for this clip, start_frame is always 1
+        annotations.write(f"{frames_dir.removeprefix(dst_parent)} 1 {num_frames} {label}\n")
 
 
 

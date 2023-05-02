@@ -17,14 +17,34 @@ videos_root = os.path.join(os.getcwd(), 'PEDFE_trim')
 annotation_file = os.path.join(videos_root, 'annotations.txt')
 
 # label # to label word
-labels_dict = {0: "posed", 1: "genuine"}
-num_classes = 2
+ #labels_dict = {0: "posed", 1: "genuine"}
+num_classes = 12
 
-batch_size = 3
+batch_size = 12
 validation_split = .2
 num_frames = 10
 num_training_epochs = 2
 
+# matches num label to str label
+labels = {
+    0: "fs",
+    1: "fg",
+    2: "ds",
+    3: "dg",
+    4: "ps",
+    5: "pg",
+    6: "ss",
+    7: "sg",
+    8: "ts",
+    9: "tg",
+    10: "rs",
+    11: "rg"
+    }
+
+# reverses above dict
+inverse_labels = {v: k for k, v in labels.items()}
+
+#### THIS VERSION IS FOR FULL DATA (ALL EMOTIONS)
 
 # runs everything
 if __name__ == "__main__":
@@ -74,7 +94,7 @@ if __name__ == "__main__":
     
     # Define model
     print("Defining model...")
-    model = VOTING(num_frames=num_frames)
+    model = CNN_LSTM5(num_frames=num_frames)
 
     # train model (if applicable)
     if 'retrain' in sys.argv:
