@@ -62,8 +62,6 @@ class CNN_LSTM(nn.Module):
         super(CNN_LSTM, self).__init__()
         self.resnet = resnet101(pretrained=True) # pretrained resnet CNNN
 
-        print(self.resnet)
-
         self.resnet.fc = Identity() # replace final linear layer with identity
         self.lstm = nn.LSTM(input_size=2048, hidden_size=hidden_size, num_layers=3)
         self.fc1 = nn.Linear(hidden_size * num_frames, 128)

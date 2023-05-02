@@ -12,7 +12,7 @@ def train(model, train_loader, num_epochs):
 
     # loss function
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.99)
 
     losses = np.array([])
 
@@ -22,19 +22,20 @@ def train(model, train_loader, num_epochs):
          for i, batch_data in enumerate(train_loader, 0):
 
             inputs, labels = batch_data
+            #print("inputs ", inputs)
 
             # zero the parameter gradients
             optimizer.zero_grad()
 
             # forward + backward + optimize
             outputs = model(inputs)
+            print("outputs: ", outputs )
 
             _ , predicted = torch.max(outputs.data, 1)
 
             correct = (predicted == labels).sum().item()
             #print(f"accuracy = {correct / predicted.shape[0]}")
 
-            print("outputs: ", outputs )
             print("predicted: ", predicted)
             print("actual labels: ", labels)
             loss = criterion(outputs, labels)
