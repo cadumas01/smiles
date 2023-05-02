@@ -5,9 +5,12 @@ from tqdm import tqdm
 def test(model, validation_loader):    
     correct = 0
     total = 0
+
+    model.eval()
     # since we're not training, we don't need to calculate the gradients for our outputs
     with torch.no_grad():
         for data in tqdm(validation_loader):
+            print("testing data = ", data[1])
             images, labels = data
             # calculate outputs by running images through the network
             outputs = model(images)

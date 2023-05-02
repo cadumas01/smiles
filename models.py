@@ -10,10 +10,11 @@ from torchvision.models import resnet18, resnet101, alexnet
 
 # Defintion for different models
 
-# basic CNN
-class BasicCNN(nn.Module):
-    def __init__(self, num_classes=2):
+# basic CNN - CNN on each frame then do voting to determine outcome
+class VOTING(nn.Module):
+    def __init__(self, num_frames=10, num_classes=2):
         super().__init__()
+        self.num_classes = num_classes
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
@@ -23,29 +24,74 @@ class BasicCNN(nn.Module):
 
     def forward(self, x):
         if x.dim() == 5:
-            B, EXTRA, C, H, W = x.shape
-        x = x.view(-1, C, H, W)
+            NUM_BATCHES, NUM_FRAMES, C, H, W = x.shape
 
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = torch.flatten(x, 1) # flatten all dimensions except batch
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x_frames = torch.zeros(NUM_BATCHES, self.num_classes)
+        for frame_index in range(NUM_FRAMES):
+            x_frame = x[:, frame_index, :, :, :].reshape(NUM_BATCHES, C, H, W)
+
+            x_frame = self.pool(F.relu(self.conv1(x_frame)))
+            x_frame = self.pool(F.relu(self.conv2(x_frame)))
+            x_frame = torch.flatten(x_frame, 1) # flatten all dimensions except batch
+            x_frame = F.relu(self.fc1(x_frame))
+            x_frame = F.relu(self.fc2(x_frame))
+            x_frame = self.fc3(x_frame)
+
+            print("x_frame = ", x_frame)
+            _, predicted = torch.max(x_frame, 1)
+            print("predicted" ,type(predicted))
+
+            for batch_index in range(NUM_BATCHES):
+                x_frames[batch_index][predicted[batch_index]] += 1
+
+        print("x frames ", x_frames)
+        return x_frames
+    
+# Used below
+class Identity(nn.Module):
+    def __init__(self):
+        super(Identity, self).__init__()
+        
+    def forward(self, x):
         return x
 
 # Based on https://github.com/pranoyr/cnn-lstm/blob/master/models/cnnlstm.py
 # LSTM + CNN
 class CNN_LSTM(nn.Module):
-    def __init__(self, num_classes=2):
+    def __init__(self, num_frames=10, hidden_size=200, num_classes=2):
         super(CNN_LSTM, self).__init__()
         self.resnet = resnet101(pretrained=True) # pretrained resnet CNNN
-        self.resnet.fc = nn.Sequential(nn.Linear(self.resnet.fc.in_features, 300))
-        self.lstm = nn.LSTM(input_size=300, hidden_size=256, num_layers=3)
-        self.fc1 = nn.Linear(256, 128)
+
+        print(self.resnet)
+
+        self.resnet.fc = Identity() # replace final linear layer with identity
+        self.lstm = nn.LSTM(input_size=2048, hidden_size=hidden_size, num_layers=3)
+        self.fc1 = nn.Linear(hidden_size * num_frames, 128)
         self.fc2 = nn.Linear(128, num_classes)
        
-    def forward(self, x_3d):
+    def forward(self, i): 
+        # x has combined frame and batch dimensions so that new shape is:
+        # x.shape = ()
+        x = i.view(-1, i.shape[2], i.shape[3], i.shape[4]) # original code with reshaping
+     
+        x = self.resnet(x)
+
+        # reseparating x's batch and frames (having just been through CNN) back. 
+        # Now, x.shape = (num_batches, num_frames, channels * width * height)
+        x = x.view(i.shape[0], i.shape[1], -1)
+        
+        x, _ = self.lstm(x)
+
+        print("x shape after lstm ", x.shape)
+        # x shape is (num_batches, lsmt output) 
+        # It's okay to pass batched data to fully connected Linear layers
+        x = x.reshape(i.shape[0], -1)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x    
+
+
+
         print("x_3d shape ", x_3d.shape)
         hidden = None
         for t in range(x_3d.size(1)):
@@ -60,14 +106,6 @@ class CNN_LSTM(nn.Module):
         x = F.relu(x)
         x = self.fc2(x)
         return x 
-
-# Used below
-class Identity(nn.Module):
-    def __init__(self):
-        super(Identity, self).__init__()
-        
-    def forward(self, x):
-        return x
 
 
 class CNN_LSTM2(nn.Module):
@@ -211,15 +249,13 @@ class CNN_LSTM5(nn.Module):
         # reseparating x's batch and frames (having just been through CNN) back. 
         # Now, x.shape = (num_batches, num_frames, channels * width * height)
         x = x.view(i.shape[0], i.shape[1], -1)
-
-
         
         x, _ = self.lstm(x)
 
         # x shape is (num_batches, lsmt output) 
         # It's okay to pass batched data to fully connected Linear layers
         x = x.reshape(i.shape[0], -1)
-        x = self.fc1(x)
+        x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x    
     

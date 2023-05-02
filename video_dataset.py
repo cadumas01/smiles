@@ -213,6 +213,7 @@ class VideoFrameDataset(torch.utils.data.Dataset):
         frame_start_indices = frame_start_indices + record.start_frame
         images = list()
 
+       
         # from each start_index, load self.frames_per_segment
         # consecutive frames
         for start_index in frame_start_indices:

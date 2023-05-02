@@ -10,6 +10,7 @@ from test import test
 from models import *
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 ### Globals ###
 videos_root = os.path.join(os.getcwd(), 'PEDFE_trim')
@@ -36,6 +37,7 @@ if __name__ == "__main__":
 
 
     if torch.cuda.is_available(): 
+        print("using cuda")
         dev = "cuda:0" 
     else: 
         dev = "cpu" 
@@ -65,14 +67,24 @@ if __name__ == "__main__":
     print("Loading data")
     train_loader, validation_loader = get_loaders(dataset, batch_size, validation_split)
 
+    sample_video = (train_loader.dataset.video_list[0])
+
+    print("sample video: ", sample_video.__dict__)
+
+    
     # Define model
     print("Defining model...")
-    model = CNN_LSTM5(num_frames=num_frames)
+    model = VOTING(num_frames=num_frames)
 
     # train model (if applicable)
     if 'retrain' in sys.argv:
         print("Training model...")
         training_losses = train(model, train_loader, num_training_epochs)    
+
+        iterations = np.arange(training_losses.size)
+
+        print('loss : ', training_losses)
+        print(" x tick: ", iterations)
         plt.plot(training_losses)
         plt.title("Training Loss over Epoch + Batches")
         plt.ylabel("Loss")

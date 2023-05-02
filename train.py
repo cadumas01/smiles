@@ -12,7 +12,7 @@ def train(model, train_loader, num_epochs):
 
     # loss function
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.99)
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
     losses = np.array([])
 
@@ -32,7 +32,7 @@ def train(model, train_loader, num_epochs):
             _ , predicted = torch.max(outputs.data, 1)
 
             correct = (predicted == labels).sum().item()
-            print(f"accuracy = {correct / predicted.shape[0]}")
+            #print(f"accuracy = {correct / predicted.shape[0]}")
 
             print("outputs: ", outputs )
             print("predicted: ", predicted)
@@ -41,7 +41,7 @@ def train(model, train_loader, num_epochs):
             loss.backward()
             optimizer.step()
 
-            np.append(losses, loss)
+            losses = np.append(losses, loss.item())
 
             # print statistics
             running_loss += loss.item()
@@ -49,5 +49,6 @@ def train(model, train_loader, num_epochs):
                 print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 20:.3f}')
                 running_loss = 0.0
 
+            print("losses = ", losses)
     print('Finished Training')
     return losses
