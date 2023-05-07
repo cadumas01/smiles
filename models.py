@@ -81,7 +81,8 @@ class BasicCNN3(nn.Module):
         self.num_classes = num_classes
         self.resnet = resnet101(pretrained=True)
 
-        self.resnet.fc = Identity() # replace final linear layer with identity
+        #  eplace final linear layer with identity
+        self.resnet.fc = Identity() #
 
         self.fc1 = nn.Linear(2048, 128)
         self.fc2 = nn.Linear(128, num_classes)
@@ -95,7 +96,39 @@ class BasicCNN3(nn.Module):
 
             x_frame = self.resnet(x_frame)
 
-            x_frame = torch.flatten(x_frame, 1) # flatten all dimensions except batch
+            # flatten all dimensions except batch
+            x_frame = torch.flatten(x_frame, 1) 
+
+            x_frame = F.relu(self.fc1(x_frame))
+            x_frame = self.fc2(x_frame)
+
+        return x_frame
+
+
+# basic CNN - CNN on frame near end but with resnet
+class BasicCNN3(nn.Module):
+    def __init__(self, num_frames=10, num_classes=2):
+        super().__init__()
+        self.num_classes = num_classes
+        self.resnet = resnet101(pretrained=True)
+
+        #  eplace final linear layer with identity
+        self.resnet.fc = Identity() #
+
+        self.fc1 = nn.Linear(2048, 128)
+        self.fc2 = nn.Linear(128, num_classes)
+
+
+    def forward(self, x):
+        if x.dim() == 5:
+            NUM_BATCHES, NUM_FRAMES, C, H, W = x.shape
+
+            x_frame = x[: , 4 * NUM_FRAMES // 5 , : , : , :]
+
+            x_frame = self.resnet(x_frame)
+
+            # flatten all dimensions except batch
+            x_frame = torch.flatten(x_frame, 1) 
 
             x_frame = F.relu(self.fc1(x_frame))
             x_frame = self.fc2(x_frame)
@@ -128,7 +161,11 @@ class CNN_LSTM(nn.Module):
         # Now, x.shape = (num_batches, num_frames, channels * width * height)
         x = x.view(i.shape[0], i.shape[1], -1)
         
-        x, _ = self.lstm(x)
+        x, last_hidden = self.lstm(x)
+
+        # Test printing, delete
+        print("x after lstm = ", x)
+        print("last hidden = ", last_hidden)
 
         print("x shape after lstm ", x.shape)
         # x shape is (num_batches, lsmt output) 
@@ -138,22 +175,6 @@ class CNN_LSTM(nn.Module):
         x = self.fc2(x)
         return x    
 
-
-
-        print("x_3d shape ", x_3d.shape)
-        hidden = None
-        for t in range(x_3d.size(1)):
-            with torch.no_grad():
-                x = self.resnet(x_3d[:, t, :, :, :])  
-            print("x = self.resnet has shape =", x.shape )
-
-            out, hidden = self.lstm(x.unsqueeze(0), hidden)      
-            print("out shape ", out.shape)
-
-        x = self.fc1(out[-1, :, :])
-        x = F.relu(x)
-        x = self.fc2(x)
-        return x 
 
 
 class CNN_LSTM2(nn.Module):

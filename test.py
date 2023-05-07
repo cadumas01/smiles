@@ -19,4 +19,4 @@ def test(model, validation_loader):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-    print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+    print(f'Accuracy of the network on test images: {100 * correct // total} %')

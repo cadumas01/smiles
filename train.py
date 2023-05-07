@@ -62,10 +62,10 @@ def train2(model, train_loader, num_epochs):
 
     # loss function
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
     # every 5 epochs, learning rate is multiplied by .1
-    lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+    lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
 
 
     losses = np.array([])
