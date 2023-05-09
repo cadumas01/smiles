@@ -35,13 +35,14 @@ if __name__ == "__main__":
         print("add the argument 'retrain' to retrain the model, otherwise saved previous neural network will be loaded")
         exit()
 
-
+    dev = "cpu"
     if torch.cuda.is_available(): 
         print("using cuda")
         dev = "cuda:0" 
-    else: 
-        dev = "cpu" 
-        device = torch.device(dev) 
+    
+    
+    
+    device = torch.device(dev) 
 
     #### Get dataset from images ###
     
