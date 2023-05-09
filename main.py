@@ -23,7 +23,7 @@ num_classes = 2
 batch_size = 5
 validation_split = .2
 num_frames = 10
-num_training_epochs = 15
+num_training_epochs = 30
 
 
 # runs everything
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     
     # Define model
     print("Defining model...")
-    model = CNN_LSTM(num_frames=num_frames)
+    model = CNN_LSTM5(num_frames=num_frames)
 
     # train model (if applicable)
     if 'retrain' in sys.argv:

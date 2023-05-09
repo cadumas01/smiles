@@ -106,7 +106,7 @@ class BasicCNN3(nn.Module):
 
 
 # basic CNN - CNN on frame near end but with resnet
-class BasicCNN3(nn.Module):
+class BasicCNN4(nn.Module):
     def __init__(self, num_frames=10, num_classes=2):
         super().__init__()
         self.num_classes = num_classes
@@ -138,6 +138,7 @@ class BasicCNN3(nn.Module):
 
 # Based on https://github.com/pranoyr/cnn-lstm/blob/master/models/cnnlstm.py
 # LSTM + CNN
+# CURRENTLY Just feeding last hidden layer output to FC layer, instead of all frame lstm outputs 
 class CNN_LSTM(nn.Module):
     def __init__(self, num_frames=10, hidden_size=200, num_classes=2):
         super(CNN_LSTM, self).__init__()
@@ -147,7 +148,7 @@ class CNN_LSTM(nn.Module):
 
         self.resnet.fc = Identity() # replace final linear layer with identity
         self.lstm = nn.LSTM(input_size=2048, hidden_size=hidden_size, num_layers=3)
-        self.fc1 = nn.Linear(hidden_size * num_frames, 128)
+        self.fc1 = nn.Linear(hidden_size * 1, 128)
         self.fc2 = nn.Linear(128, num_classes)
        
     def forward(self, i): 
@@ -161,11 +162,13 @@ class CNN_LSTM(nn.Module):
         # Now, x.shape = (num_batches, num_frames, channels * width * height)
         x = x.view(i.shape[0], i.shape[1], -1)
         
-        x, last_hidden = self.lstm(x)
+        full_output, last_hidden = self.lstm(x)
+
+        x = full_output[:, -1, :]
 
         # Test printing, delete
-        print("x after lstm = ", x)
-        print("last hidden = ", last_hidden)
+        #print("x after lstm = ", x)
+        #print("last hidden = ", last_hidden)
 
         print("x shape after lstm ", x.shape)
         # x shape is (num_batches, lsmt output) 
@@ -329,4 +332,60 @@ class CNN_LSTM5(nn.Module):
         return x    
     
 
+
+
     # Look at Slow fast model
+
+# Attempting to do a version of 3D CNN manually
+
+# basic CNN - CNN on frame near end but with resnet
+class Manual3DCNN(nn.Module):
+    def __init__(self, num_frames=10, num_classes=2):
+        super().__init__()
+        self.num_classes = num_classes
+
+        self.resnet = resnet101(pretrained=True)
+
+        #  replace final linear layer with identity
+        self.resnet.fc = Identity() #
+
+        # make arrays  fully connected layers - one for each frame
+        self.fc1s = []
+        self.fc2s = []
+
+        for _ in range(num_frames):
+
+            fc1 = nn.Linear(2048, 128)
+            fc2 = nn.Linear(128, num_classes)
+
+            self.fc1s.append(fc1)
+            self.fc2s.append(fc2)
+
+        
+        self.fc_final = nn.Linear(num_frames * num_classes, num_classes)
+            
+
+    def forward(self, x):
+        if x.dim() == 5:
+            NUM_BATCHES, NUM_FRAMES, C, H, W = x.shape
+
+        frame_outputs = torch.empty(NUM_BATCHES, NUM_FRAMES, self.num_classes)
+
+        for t in range(NUM_FRAMES):
+            x_frame = x[: , t, : , : , :]
+
+            x_frame = self.resnet(x_frame)
+
+            # flatten all dimensions except batch
+            x_frame = torch.flatten(x_frame, 1) 
+
+            x_frame = F.relu(self.fc1s[t](x_frame))
+            x_frame = self.fc2s[t](x_frame)
+
+            frame_outputs[:, t, :] = x_frame
+
+
+        # now take all frame outputs and do a final linear layer
+        frame_outputs = frame_outputs.reshape(NUM_BATCHES, -1)
+
+        return self.fc_final(frame_outputs)

@@ -65,7 +65,7 @@ def train2(model, train_loader, num_epochs):
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
     # every 5 epochs, learning rate is multiplied by .1
-    lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+    lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
 
 
     losses = np.array([])
@@ -86,6 +86,10 @@ def train2(model, train_loader, num_epochs):
             _ , predicted = torch.max(outputs.data, 1)
 
             correct = (predicted == labels).sum().item()
+
+            print("outputs: ", outputs )
+            print("predicted: ", predicted)
+            print("actual labels: ", labels)
            
             loss = criterion(outputs, labels)
             loss.backward()
