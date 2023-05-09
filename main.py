@@ -66,7 +66,14 @@ if __name__ == "__main__":
 
     #### Split data into train and validation and put into loaders ####
     print("Loading data")
-    train_loader, validation_loader = get_loaders(dataset, batch_size, validation_split)
+
+    # Number of workers for the dataloader
+    num_workers = 0 if device.type == 'cuda' else 2
+    # Whether to put fetched data tensors to pinned memory
+    pin_memory = True if device.type == 'cuda' else False
+
+
+    train_loader, validation_loader = get_loaders(dataset, batch_size, validation_split, num_workers=num_workers, pin_memory=pin_memory)
 
     sample_video = (train_loader.dataset.video_list[0])
 
@@ -76,6 +83,9 @@ if __name__ == "__main__":
     # Define model
     print("Defining model...")
     model = CNN_LSTM(num_frames=num_frames)
+
+    # put model on gpu (or cpu if no cuda)
+    model = model.to(device)
 
     # train model (if applicable)
     if 'retrain' in sys.argv:
