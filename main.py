@@ -74,7 +74,7 @@ if __name__ == "__main__":
     
     # Define model
     print("Defining model...")
-    model = CNN_LSTM5(num_frames=num_frames)
+    model = CNN_LSTM(num_frames=num_frames)
 
     # train model (if applicable)
     if 'retrain' in sys.argv:
