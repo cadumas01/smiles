@@ -371,6 +371,11 @@ class FramesVoting(nn.Module):
 
         frame_outputs = torch.empty(NUM_BATCHES, NUM_FRAMES, self.num_classes)
 
+        if torch.cuda.is_available(): 
+            device = torch.device("cuda:0") 
+            frame_outputs = frame_outputs.to(device)
+
+
         for t in range(NUM_FRAMES):
             x_frame = x[: , t, : , : , :]
 
