@@ -15,7 +15,7 @@ import torch.optim as optim
 
 # Returns data loaders
 # Returns train_loader, validation_loader
-def get_loaders(dataset, batch_size, validation_split, num_workers=2, pin_memory=True):
+def get_loaders(dataset, batch_size, validation_split, num_workers=2, pin_memory=False):
     # https://stackoverflow.com/questions/50544730/how-do-i-split-a-custom-dataset-into-training-and-test-datasets
     # Creating data indices for training and validation splits:
     dataset_size = len(dataset)

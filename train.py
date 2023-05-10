@@ -55,8 +55,7 @@ def train(model, train_loader, num_epochs):
 
 # Similar to above but uses learning rate decay based on epoch
 # Defines loss function and trains model (returns trained model -- maybe train in place)
-def train2(model, train_loader, num_epochs):
-
+def train2(model, train_loader, num_epochs, device):
     print("train 2 active")
     model.train()
 
@@ -64,8 +63,8 @@ def train2(model, train_loader, num_epochs):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-    # every 5 epochs, learning rate is multiplied by .1
-    lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
+    # every 15 epochs, learning rate is multiplied by .1
+    lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.2)
 
 
     losses = np.array([])
@@ -73,9 +72,19 @@ def train2(model, train_loader, num_epochs):
     print("Train Model on training data...")
     for epoch in range(num_epochs):
         running_loss = 0
+        torch.cuda.empty_cache()
         for i, batch_data in enumerate(train_loader, 0):
 
+            # Format batch
+            #real_cpu = batch_data.to(device)
+            #b_size = real_cpu.size(0)
+            #label = torch.full((b_size,), 0, device=device).type(torch.float32)  
+
             inputs, labels = batch_data
+
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -104,6 +113,7 @@ def train2(model, train_loader, num_epochs):
                 running_loss = 0.0
 
             #print("losses = ", losses)
+            torch.cuda.empty_cache()
 
         lr_scheduler.step()
         

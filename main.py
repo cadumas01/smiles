@@ -6,7 +6,42 @@ import sys
 
 from load import get_loaders
 from train import *
-from test import test
+# =============================================================================
+import torch
+from tqdm import tqdm
+
+# Testing (with validation data)
+def test(model, validation_loader, device):
+    correct = 0
+    total = 0
+
+    model.eval()
+    # since we're not training, we don't need to calculate the gradients for our outputs
+    with torch.no_grad():
+        for data in tqdm(validation_loader):
+            print("testing data = ", data[1])
+            images, labels = data
+
+            images = images.to(device)
+            #labels = labels.to(device)
+
+            # calculate outputs by running images through the network
+            outputs = model(images).to(device)
+            labels = labels.to(device)
+
+
+            # the class with the highest energy is what we choose as prediction
+            _, predicted = torch.max(outputs.data, 1)
+            predicted = predicted.to(device)
+
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+            torch.cuda.empty_cache()
+    print(
+        f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+
+
+# =============================================================================
 from models import *
 
 import matplotlib.pyplot as plt
@@ -16,14 +51,17 @@ import numpy as np
 videos_root = os.path.join(os.getcwd(), 'PEDFE_trim')
 annotation_file = os.path.join(videos_root, 'annotations.txt')
 
+import os
+#os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:<enter-size-here>"
+
 # label # to label word
 labels_dict = {0: "posed", 1: "genuine"}
 num_classes = 2
 
-batch_size = 5
+batch_size = 2
 validation_split = .2
 num_frames = 10
-num_training_epochs = 30
+num_training_epochs = 90
 
 
 # runs everything
@@ -70,8 +108,8 @@ if __name__ == "__main__":
     # Number of workers for the dataloader
     num_workers = 0 if device.type == 'cuda' else 2
     # Whether to put fetched data tensors to pinned memory
-    pin_memory = True if device.type == 'cuda' else False
-
+    # pin_memory = True if device.type == 'cuda' else False
+    pin_memory = False
 
     train_loader, validation_loader = get_loaders(dataset, batch_size, validation_split, num_workers=num_workers, pin_memory=pin_memory)
 
@@ -90,7 +128,7 @@ if __name__ == "__main__":
     # train model (if applicable)
     if 'retrain' in sys.argv:
         print("Training model...")
-        training_losses = train2(model, train_loader, num_training_epochs)    
+        training_losses = train2(model, train_loader, num_training_epochs, device)    
 
         iterations = np.arange(training_losses.size)
 
@@ -104,10 +142,15 @@ if __name__ == "__main__":
 
     # save trained model
     PATH = './basic_model.pth'
+
+    torch.cuda.empty_cache()
+
+
     torch.save(model.state_dict(), PATH)
     print(f"Saved trained model as {PATH}")
 
+    
     # Test Data
     print("Testing model against validation data...")
-    test(model, validation_loader)
+    test(model, validation_loader, device)
     print("Validation complete.")
