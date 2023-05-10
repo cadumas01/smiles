@@ -336,10 +336,10 @@ class CNN_LSTM5(nn.Module):
 
     # Look at Slow fast model
 
-# Attempting to do a version of 3D CNN manually
+# Attempting to do a version Frames Voting
 
 # basic CNN - CNN on frame near end but with resnet
-class Manual3DCNN(nn.Module):
+class FramesVoting(nn.Module):
     def __init__(self, num_frames=10, num_classes=2):
         super().__init__()
         self.num_classes = num_classes

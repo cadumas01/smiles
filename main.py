@@ -120,7 +120,7 @@ if __name__ == "__main__":
     
     # Define model
     print("Defining model...")
-    model = CNN_LSTM(num_frames=num_frames)
+    model = FramesVoting(num_frames=num_frames)
 
     # put model on gpu (or cpu if no cuda)
     model = model.to(device)
