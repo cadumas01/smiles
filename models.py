@@ -361,7 +361,9 @@ class FramesVoting(nn.Module):
             self.fc1s.append(fc1)
             self.fc2s.append(fc2)
 
-        
+        self.fc1s = nn.ModuleList(self.fc1s)
+        self.fc2s = nn.ModuleList(self.fc2s)
+
         self.fc_final = nn.Linear(num_frames * num_classes, num_classes)
             
 
@@ -371,6 +373,7 @@ class FramesVoting(nn.Module):
 
         frame_outputs = torch.empty(NUM_BATCHES, NUM_FRAMES, self.num_classes)
 
+        device = 'cpu'
         if torch.cuda.is_available(): 
             device = torch.device("cuda:0") 
             frame_outputs = frame_outputs.to(device)
@@ -382,7 +385,8 @@ class FramesVoting(nn.Module):
             x_frame = self.resnet(x_frame)
 
             # flatten all dimensions except batch
-            x_frame = torch.flatten(x_frame, 1) 
+            x_frame = torch.flatten(x_frame, 1).to(device)
+
 
             x_frame = F.relu(self.fc1s[t](x_frame))
             x_frame = self.fc2s[t](x_frame)
